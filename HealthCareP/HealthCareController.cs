@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace HealthCareAppointmentSystem
 {
-    internal class HealthCareController
+    public class HealthCareController
     {
         private readonly HealthCareContext _context;
 
@@ -15,8 +18,62 @@ namespace HealthCareAppointmentSystem
         {
             _context = new HealthCareContext();
         }
+        public void RegisterUser(User user)
+        {
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(user);
 
-        /// Read all appointments from the database.
+            if (!Validator.TryValidateObject(user, validationContext, validationResults, true))
+            {
+                foreach (var validationResult in validationResults)
+                {
+                    Console.WriteLine(validationResult.ErrorMessage);
+                }
+                return;
+            }
+
+            var parameters = new[]
+            {
+                new SqlParameter("@Name", user.Name),
+                new SqlParameter("@Role", user.Role),
+                new SqlParameter("@Email", user.Email),
+                new SqlParameter("@Age", user.Age),
+                new SqlParameter("@Phone", user.Phone),
+                new SqlParameter("@Address", user.Address),
+                new SqlParameter("@Password", user.Password)
+            };
+
+            _context.Database.ExecuteSqlRaw("EXEC AddUser @Name, @Role, @Email, @Age, @Phone, @Address, @Password", parameters);
+        }
+        // Login a user
+        public int LoginUser(string Email, string Password, out bool isPasswordReset, string answer = null, string newPassword = null)
+        {
+            isPasswordReset = false;
+            if (Password != null)
+            {
+                var u = new SqlParameter("@Email", Email);
+                var p = new SqlParameter("@Password", Password);
+                var resParam = new SqlParameter("@res", System.Data.SqlDbType.Int)
+                {
+                    Direction = System.Data.ParameterDirection.Output
+                };
+
+                _context.Database.ExecuteSqlRaw("EXEC LoginUser @Email, @Password, @res OUTPUT", u, p, resParam);
+
+                return (int)resParam.Value;
+            }
+            else if (answer != null && newPassword != null)
+            {
+                var paak = new SqlParameter("@Email", Email);
+                var kaak = new SqlParameter("@pass", newPassword);
+                var aak = new SqlParameter("@ans", answer);
+                _context.Database.ExecuteSqlRaw("EXEC ChangePas @USERID, @pass, @ans", paak, kaak, aak);
+                isPasswordReset = true;
+                return 1;
+            }
+            return 0;
+        }
+        /// Read all appointments from the database. 
         public List<AppointmentDetails> ReadAllAppointments()
         {
             return _context.AppointmentDetails.ToList();
@@ -118,6 +175,94 @@ namespace HealthCareAppointmentSystem
             _context.Database.ExecuteSqlRaw(
                 "EXEC AssignNewAppointment @p0, @p1, @p2, @p3, @p4",
                 patientId, doctorId, newDate, newTimeSlot, location);
+        }
+        public void AddConsultation(int appointmentId, string notes, string prescription)
+        {
+            var consultation = new Consultation
+            {
+                AppointmentID = appointmentId,
+                Notes = notes,
+                Prescription = prescription
+            };
+            _context.ConsultationTable.Add(consultation);
+            _context.SaveChanges();
+        }
+        public List<Consultation> ListConsultations()
+        {
+            var consultationDetails = new List<Consultation>();
+
+            foreach (var consultation in _context.ConsultationTable)
+            {
+                consultationDetails.Add(new Consultation
+                {
+                    ConsultationID = consultation.ConsultationID,
+                    AppointmentID = consultation.AppointmentID,
+                    Notes = consultation.Notes,
+                    Prescription = consultation.Prescription
+                });
+            }
+            return consultationDetails;
+        }
+
+        /*public void ListConsultations()
+        {
+            foreach (var consultation in _context.ConsultationTable)
+            {
+                Console.WriteLine($"Consultation ID: {consultation.ConsultationID}, Appointment ID: {consultation.AppointmentID}, Notes: {consultation.Notes}, Prescription: {consultation.Prescription}");
+            }
+        }*/
+        public async Task SendAppointmentReminder(int appointmentId)
+        {
+            var appointment = await _context.AppointmentsTable
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .FirstOrDefaultAsync(a => a.AppointmentID == appointmentId);
+
+            if (appointment != null)
+            {
+                var message = $"Reminder: You have an appointment with Dr. {appointment.Doctor.Name} on {appointment.Date} at {appointment.TimeSlot}.";
+                var notification = new Notification
+                {
+                    UserID = appointment.PatientID,
+                    Message = message,
+                    SentDate = DateTime.Now,
+                    IsRead = false
+                };
+
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Send email/SMS or display in frontend
+                // EmailService.SendEmail(appointment.Patient.Email, "Appointment Reminder", message);
+                // SmsService.SendSms(appointment.Patient.Phone, message);
+            }
+        }
+
+        public async Task NotifyCancellation(int appointmentId)
+        {
+            var appointment = await _context.AppointmentsTable
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .FirstOrDefaultAsync(a => a.AppointmentID == appointmentId);
+
+            if (appointment != null)
+            {
+                var message = $"Notification: Your appointment with Dr. {appointment.Doctor.Name} on {appointment.Date} at {appointment.TimeSlot} has been cancelled.";
+                var notification = new Notification
+                {
+                    UserID = appointment.PatientID,
+                    Message = message,
+                    SentDate = DateTime.Now,
+                    IsRead = false
+                };
+
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Send email/SMS or display in frontend
+                // EmailService.SendEmail(appointment.Patient.Email, "Appointment Cancellation", message);
+                // SmsService.SendSms(appointment.Patient.Phone, message);
+            }
         }
     }
 }

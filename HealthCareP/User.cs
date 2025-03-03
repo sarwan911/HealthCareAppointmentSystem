@@ -11,23 +11,30 @@ namespace HealthCareAppointmentSystem
     {
         [Key]
         public int UserID { get; set; }
-        [Required(ErrorMessage = "Name field must not be empty.")]
+
+        [Required(ErrorMessage = "Name is required.")]
         public string Name { get; set; }
 
+        [Required(ErrorMessage = "Role is required.")]
+        public string Role { get; set; } // Doctor or Patient
+
         [Required(ErrorMessage = "Email is required.")]
-        [DataType(DataType.EmailAddress)]
-        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Invalid email format.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
         public string Email { get; set; }
 
+        [Required(ErrorMessage = "Please enter your age")]
+        public int Age { get; set; }
+
         [Required(ErrorMessage = "Phone number is required.")]
-        [DataType(DataType.PhoneNumber)]
+        [Phone(ErrorMessage = "Invalid phone number.")]
+        [Range(100000000000, 999999999999, ErrorMessage = "Phone number must be 12 digits or below it.")]
         public long Phone { get; set; }
 
-        [Required(ErrorMessage = "You must choose either 'Doctor' or 'Patient'.")]
-        public string Role { get; set; }
+        [Required(ErrorMessage = "Address is required.")]
+        public string Address { get; set; }
 
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; }
+        [Required(ErrorMessage = "Password is required.")]
+       
+        public string Password { get; set; } // For login and registration
     }
 }

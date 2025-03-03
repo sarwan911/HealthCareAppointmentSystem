@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthCareAppointmentSystem.Migrations
 {
     [DbContext(typeof(HealthCareContext))]
-    [Migration("20250227043310_hea")]
-    partial class hea
+    [Migration("20250228124141_rou")]
+    partial class rou
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,6 +58,30 @@ namespace HealthCareAppointmentSystem.Migrations
                     b.ToTable("Appointments", (string)null);
                 });
 
+            modelBuilder.Entity("HealthCareAppointmentSystem.Consultation", b =>
+                {
+                    b.Property<int>("ConsultationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConsultationID"));
+
+                    b.Property<int>("AppointmentID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Prescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ConsultationID");
+
+                    b.ToTable("ConsultationTable");
+                });
+
             modelBuilder.Entity("HealthCareAppointmentSystem.DocAvailability", b =>
                 {
                     b.Property<int>("SessionID")
@@ -82,6 +106,34 @@ namespace HealthCareAppointmentSystem.Migrations
                     b.ToTable("DocAvailabilities", (string)null);
                 });
 
+            modelBuilder.Entity("HealthCareAppointmentSystem.Notification", b =>
+                {
+                    b.Property<int>("NotificationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationID"));
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("HealthCareAppointmentSystem.User", b =>
                 {
                     b.Property<int>("UserID")
@@ -90,13 +142,21 @@ namespace HealthCareAppointmentSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -142,6 +202,17 @@ namespace HealthCareAppointmentSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("HealthCareAppointmentSystem.Notification", b =>
+                {
+                    b.HasOne("HealthCareAppointmentSystem.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

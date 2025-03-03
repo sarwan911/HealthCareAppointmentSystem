@@ -8,68 +8,154 @@ namespace HealthCareAppointmentSystem
     {
         private static void Main(string[] args)
         {
+           
             HealthCareController controller = new HealthCareController();
             bool exit = false;
+            Console.WriteLine("Welcome to the Healthcare Appointment Management System!");
 
             while (!exit)
             {
-                Console.WriteLine("\nSelect an option:");
-                Console.WriteLine("1. Book a new appointment");
-                Console.WriteLine("2. List all appointments");
-                Console.WriteLine("3. Modify an appointment");
-                Console.WriteLine("4. Cancel an appointment");
-                Console.WriteLine("5. View doctor availability");
-                Console.WriteLine("6. Add doctor availability");
-                Console.WriteLine("7. Update doctor availability");
-                Console.WriteLine("8. Delete doctor availability");
-                Console.WriteLine("9. Reschedule an appointment");
-                Console.WriteLine("10. Assign a new appointment");
-                Console.WriteLine("11. Exit");
-                Console.Write("Enter your choice: ");
-                string choice = Console.ReadLine().Trim();
+                Console.WriteLine("\nMain Menu");
+                Console.WriteLine("1. Register");
+                Console.WriteLine("2. Login");
+                Console.WriteLine("3. Book a new appointment");
+                Console.WriteLine("4. List all appointments");
+                Console.WriteLine("5. Modify an appointment");
+                Console.WriteLine("6. Cancel an appointment");
+                Console.WriteLine("7. View doctor availability");
+                Console.WriteLine("8. Add doctor availability");
+                Console.WriteLine("9. Update doctor availability");
+                Console.WriteLine("10. Delete doctor availability");
+                Console.WriteLine("11. Reschedule an appointment");
+                Console.WriteLine("12. Assign a new appointment");
+                Console.WriteLine("13. Add Consultation");
+                Console.WriteLine("14. List Consultations");
+                Console.WriteLine("15. Exit");
+                Console.Write("Select an option: ");
 
-                switch (choice)
+                if (int.TryParse(Console.ReadLine(), out int choice))
                 {
-                    case "1":
-                        CreateAppointment(controller);
-                        break;
-                    case "2":
-                        ListAppointments(controller);
-                        break;
-                    case "3":
-                        UpdateAppointment(controller);
-                        break;
-                    case "4":
-                        DeleteAppointment(controller);
-                        break;
-                    case "5":
-                        ListDocAvailabilities(controller);
-                        break;
-                    case "6":
-                        CreateDocAvailability(controller);
-                        break;
-                    case "7":
-                        UpdateDocAvailability(controller);
-                        break;
-                    case "8":
-                        DeleteDocAvailability(controller);
-                        break;
-                    case "9":
-                        RescheduleAppointment(controller);
-                        break;
-                    case "10":
-                        AssignNewAppointment(controller);
-                        break;
-                    case "11":
-                        exit = true;
-                        break;
-                    default:
-                        Console.WriteLine("Invalid choice. Please try again.");
-                        break;
+                    switch (choice)
+                    {
+                        case 1:
+                            RegisterUser(controller);
+                    
+                            break;
+                        case 2:
+                            LoginUser(controller);
+                            break;
+                        case 3:
+                            CreateAppointment(controller);
+                            break;
+                        case 4:
+                            ListAppointments(controller);
+                            break;
+                        case 5:
+                            UpdateAppointment(controller);
+                            break;
+                        case 6:
+                            DeleteAppointment(controller);
+                            break;
+                        case 7:
+                            ListDocAvailabilities(controller);
+                            break;
+                        case 8:
+                            CreateDocAvailability(controller);
+                            break;
+                        case 9:
+                            UpdateDocAvailability(controller);
+                            break;
+                        case 10:
+                            DeleteDocAvailability(controller);
+                            break;
+                        case 11:
+                            RescheduleAppointment(controller);
+                            break;
+                        case 12:
+                            AssignNewAppointment(controller);
+                            break;
+                        case 13:
+                            AddConsultation(controller);
+                            break;
+                        case 14:
+                            ListConsultations(controller);
+                            break;
+                        case 15:
+                            Console.WriteLine("Exiting the application...");
+                            return;
+                        default:
+                            Console.WriteLine("Invalid option. Please try again.");
+                            break;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Please enter a number.");
                 }
             }
         }
+        static void RegisterUser(HealthCareController controller)
+        {
+            Console.WriteLine("\nRegister a New User");
 
+            Console.Write("Enter Name: ");
+            string name = Console.ReadLine();
+
+            Console.Write("Enter Role (Doctor/Patient): ");
+            string role = Console.ReadLine();
+
+            Console.Write("Enter Email: ");
+            string email = Console.ReadLine();
+
+            Console.Write("Enter Age: ");
+            int age = Convert.ToInt32(Console.ReadLine());
+
+            Console.Write("Enter Phone: ");
+            long phone = long.Parse(Console.ReadLine());
+
+            Console.Write("Enter Address: ");
+            string address = Console.ReadLine();
+
+            Console.Write("Enter Password: ");
+            string password = Console.ReadLine();
+
+            var newUser = new User
+            {
+                Name = name,
+                Role = role,
+                Email = email,
+                Age = age,
+                Phone = phone,
+                Address = address,
+                Password = password
+            };
+            insert inc = new insert();
+            inc.insertUser(newUser);
+
+            controller.RegisterUser(newUser);
+            Console.WriteLine("User registered successfully!");
+        }
+
+        static void LoginUser(HealthCareController controller)
+        {
+            Console.WriteLine("\nLogin");
+
+            Console.Write("Enter Email: ");
+            string email = Console.ReadLine();
+
+            Console.Write("Enter Password: ");
+            string password = Console.ReadLine();
+
+            var user = controller.LoginUser(email, password, out _);
+            if (user == 1)
+            {
+                Console.WriteLine($"Login successful.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid email or password.");
+            }
+        }
         private static void CreateAppointment(HealthCareController controller)
         {
             Console.Write("Enter Patient ID: ");
@@ -242,6 +328,30 @@ namespace HealthCareAppointmentSystem
 
             controller.AssignNewAppointment(patientID, doctorID, newDate, newTimeSlot, location);
             Console.WriteLine("New appointment assigned successfully!");
+        }
+        static void AddConsultation(HealthCareController controller)
+        {
+            Console.WriteLine("\nAdd Consultation");
+
+            Console.Write("Enter Appointment ID: ");
+            var appointmentId = int.Parse(Console.ReadLine());
+            Console.Write("Enter Consultation Notes: ");
+            var notes = Console.ReadLine();
+            Console.Write("Enter Prescription: ");
+            var prescription = Console.ReadLine();
+
+            controller.AddConsultation(appointmentId, notes, prescription);
+            Console.WriteLine("Consultation added successfully!");
+        }
+
+        static void ListConsultations(HealthCareController controller)
+        {
+            Console.WriteLine("\nList of Consultations:");
+            var consultations = controller.ListConsultations();
+            foreach (var consultation in consultations)
+            {
+                Console.WriteLine($"Appointment ID: {consultation.AppointmentID}, Notes: {consultation.Notes}, Prescription: {consultation.Prescription}");
+            }
         }
     }
 }

@@ -12,15 +12,32 @@ namespace HealthCareAppointmentSystem.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "ConsultationTable",
+                columns: table => new
+                {
+                    ConsultationID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AppointmentID = table.Column<int>(type: "int", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Prescription = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConsultationTable", x => x.ConsultationID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
                     UserID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<long>(type: "bigint", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Age = table.Column<int>(type: "int", nullable: false),
+                    Phone = table.Column<long>(type: "bigint", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -78,6 +95,27 @@ namespace HealthCareAppointmentSystem.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    NotificationID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.NotificationID);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_DoctorID",
                 table: "Appointments",
@@ -92,6 +130,11 @@ namespace HealthCareAppointmentSystem.Migrations
                 name: "IX_DocAvailabilities_DoctorID",
                 table: "DocAvailabilities",
                 column: "DoctorID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserID",
+                table: "Notifications",
+                column: "UserID");
         }
 
         /// <inheritdoc />
@@ -101,7 +144,13 @@ namespace HealthCareAppointmentSystem.Migrations
                 name: "Appointments");
 
             migrationBuilder.DropTable(
+                name: "ConsultationTable");
+
+            migrationBuilder.DropTable(
                 name: "DocAvailabilities");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Users");
