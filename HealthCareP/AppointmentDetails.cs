@@ -30,5 +30,6 @@ namespace HealthCareAppointmentSystem
         public virtual User Patient { get; set; }
         [ForeignKey(nameof(DoctorID))]
         public virtual User Doctor { get; set; }
+
     }
 }

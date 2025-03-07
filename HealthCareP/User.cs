@@ -17,7 +17,7 @@ namespace HealthCareAppointmentSystem
 
         [Required(ErrorMessage = "Role is required.")]
         public string Role { get; set; } // Doctor or Patient
-
+        [RegularExpression(@"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", ErrorMessage = "Invalid email address.")]
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
         public string Email { get; set; }
@@ -26,8 +26,6 @@ namespace HealthCareAppointmentSystem
         public int Age { get; set; }
 
         [Required(ErrorMessage = "Phone number is required.")]
-        [Phone(ErrorMessage = "Invalid phone number.")]
-        [Range(100000000000, 999999999999, ErrorMessage = "Phone number must be 12 digits or below it.")]
         public long Phone { get; set; }
 
         [Required(ErrorMessage = "Address is required.")]

@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="NotificationService.cs" />
+    <Compile Remove="AppointmentController.cs" />
+    <Compile Remove="NotificationContext.cs" />
   </ItemGroup>
 
   <ItemGroup>
